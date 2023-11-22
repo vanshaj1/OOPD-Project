@@ -1,7 +1,7 @@
 #include "main_class.h"
 #include <unistd.h>
 
-MainClass::MainClass() : currentPath{new filesystem::path(filesystem::current_path())}, mkdir(currentPath)
+MainClass::MainClass() : currentPath{new filesystem::path(filesystem::current_path())}, mkdir(currentPath), rm(currentPath)
 {
 }
 
@@ -14,6 +14,7 @@ void MainClass::mainLoop()
         getline(std::cin, s);
         if (s == "exit")
             break;
+        optind = 0;
         commandParser(s);
     }
 }
@@ -43,8 +44,9 @@ void MainClass::commandParser(string &s)
     {
         mkdir.execute(argc, argv);
     }
-    else
+    else if (!strcmp(argv[0], "rm"))
     {
+        rm.execute(argc, argv);
     }
 
     for (i = 0; i < argc; i++)

@@ -22,8 +22,6 @@ void Mkdir::execute(int argc, char *argv[])
     }
 
     int c;
-    optind = 0;
-
     while ((c = getopt(argc, argv, "hp")) != -1)
     {
         switch (c)
@@ -63,8 +61,8 @@ void Mkdir::execute(int argc, char *argv[])
 const char *Mkdir::helpText()
 {
     return "Usage: mkdir [OPTION]... DIRECTORY...\n"
-           "Create the DIRECTORY(ies), if they do not already exits\n\n\n"
-           "-p   make parent directories if required\n";
+           "Create the DIRECTORY(ies), if they do not already exits\n\n"
+           "-p   make parent directories if required\n\n";
 }
 
 void Mkdir::createDirectory(const char *path, bool parent)
