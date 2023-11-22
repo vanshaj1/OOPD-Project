@@ -1,7 +1,7 @@
 #include "main_class.h"
 #include <unistd.h>
 
-MainClass::MainClass() : currentPath{filesystem::current_path()}
+MainClass::MainClass() : currentPath{new filesystem::path(filesystem::current_path())}, mkdir(currentPath)
 {
 }
 
@@ -9,7 +9,7 @@ void MainClass::mainLoop()
 {
     while (true)
     {
-        cout << currentPath.c_str() << "$ ";
+        cout << (*currentPath).c_str() << "$ ";
         string s;
         getline(std::cin, s);
         if (s == "exit")
@@ -32,20 +32,22 @@ void MainClass::commandParser(string &s)
     stringstream str;
     str << s;
     string key;
-    int i = 1;
+    int i = 0;
     while (std::getline(str, key, ' '))
     {
         argv[i] = new char[key.size() + 1];
         strcpy(argv[i], key.c_str());
         i++;
     }
+    if (!strcmp(argv[0], "mkdir"))
+    {
+        mkdir.execute(argc, argv);
+    }
+    else
+    {
+    }
 
-    // int c;
-    // while ((c = getopt(argc, argv, "rm")) != -1)
-    // {
-    //     cout << (char)c << endl;
-    // }
-    for (i = 1; i < argc; i++)
+    for (i = 0; i < argc; i++)
     {
         delete argv[i];
     }
