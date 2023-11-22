@@ -3,6 +3,7 @@
 #include <filesystem>
 #include "mkdir.h"
 #include "rm.h"
+#include "cp.h"
 
 using namespace std;
 
@@ -13,6 +14,7 @@ class MainClass
 
     Mkdir mkdir;
     Rm rm;
+    Cp cp;
 
 public:
     MainClass();

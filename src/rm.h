@@ -3,12 +3,12 @@
 
 class Rm : public CommandClass
 {
-    void _deleteItem(std::filesystem::path path, bool recursive);
+    void _deleteItem(filesystem::path path, bool recursive, bool verbose);
 
 public:
-    Rm(std::filesystem::path *path);
+    Rm(filesystem::path *path);
 
     void execute(int argc, char *argv[]) override;
     const char *helpText() override;
-    void deleteItem(const char *path, bool recursive = false);
+    void deleteItem(const char *path, bool recursive = false, bool verbose = false);
 };

@@ -21,7 +21,7 @@ void Rm::execute(int argc, char *argv[])
     }
 
     int c;
-    while ((c = getopt(argc, argv, "rh")) != -1)
+    while ((c = getopt(argc, argv, "rhv")) != -1)
     {
         switch (c)
         {
@@ -45,6 +45,16 @@ void Rm::execute(int argc, char *argv[])
             deleteItem(item, true);
             break;
         }
+        case 'v':
+        {
+            if (!found)
+            {
+                cout << "file/directory not found" << endl;
+                return;
+            }
+            deleteItem(item, true, true);
+            break;
+        }
         }
     }
     if (optind == 1)
@@ -63,16 +73,17 @@ const char *Rm::helpText()
     return "Usage: rm [OPTION]... FILE...\n"
            "Remove(unlink) the FILE.\n\n"
            "-h   Get help text\n"
-           "-r recursively delete directories\n\n";
+           "-r   Recursively delete directories\n"
+           "-v   Get description of each step(implicitly recursive)\n\n";
 }
 
-void Rm::deleteItem(const char *path, bool recursive)
+void Rm::deleteItem(const char *path, bool recursive, bool verbose)
 {
     try
     {
         auto newPath = *currentPath;
         newPath.append(path);
-        _deleteItem(newPath, recursive);
+        _deleteItem(newPath, recursive, verbose);
     }
     catch (const char *s)
     {
@@ -84,24 +95,31 @@ void Rm::deleteItem(const char *path, bool recursive)
     }
 }
 
-void Rm::_deleteItem(filesystem::path path, bool recursive)
+void Rm::_deleteItem(filesystem::path path, bool recursive, bool verbose)
 {
     if (filesystem::is_directory(path))
     {
         if (!recursive)
         {
-            throw "-r flag required for deleting directories";
+            throw "-r or -v flag required for deleting directories";
         }
     }
     else
     {
+        if (verbose)
+        {
+            cout << "Deleting file " << path.filename() << endl;
+        }
         filesystem::remove(path);
         return;
     }
-
+    if (verbose)
+    {
+        cout << "Deleting directory " << path.filename() << ": " << endl;
+    }
     for (auto const &dirEntry : filesystem::directory_iterator(path))
     {
-        _deleteItem(dirEntry.path(), recursive);
+        _deleteItem(dirEntry.path(), recursive, verbose);
     }
     filesystem::remove(path);
 }

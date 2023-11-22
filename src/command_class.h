@@ -1,6 +1,8 @@
 #pragma once
 #include <filesystem>
 
+using namespace std;
+
 class CommandClass
 {
 protected:
