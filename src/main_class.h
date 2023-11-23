@@ -4,6 +4,7 @@
 #include "mkdir.h"
 #include "rm.h"
 #include "cp.h"
+#include "mv.h"
 
 using namespace std;
 
@@ -15,6 +16,7 @@ class MainClass
     Mkdir mkdir;
     Rm rm;
     Cp cp;
+    Mv mv;
 
 public:
     MainClass();
