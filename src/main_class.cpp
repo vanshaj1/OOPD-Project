@@ -1,7 +1,8 @@
 #include "main_class.h"
 #include <unistd.h>
 
-MainClass::MainClass() : currentPath{new filesystem::path(filesystem::current_path())}, mkdir(currentPath), rm(currentPath), cp(currentPath), mv(currentPath)
+MainClass::MainClass() : currentPath{new filesystem::path(filesystem::current_path())}, mkdir(currentPath), rm(currentPath), cp(currentPath), mv(currentPath),
+                         cd(currentPath)
 {
 }
 
@@ -61,9 +62,18 @@ void MainClass::commandParser(string &s)
     {
         mv.execute(argc, argv);
     }
+    else if (!strcmp(argv[0], "cd"))
+    {
+        cd.execute(argc, argv);
+    }
 
     for (i = 0; i < argc; i++)
     {
         delete argv[i];
     }
+}
+
+MainClass::~MainClass()
+{
+    delete currentPath;
 }

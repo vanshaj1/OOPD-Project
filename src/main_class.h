@@ -5,6 +5,7 @@
 #include "rm.h"
 #include "cp.h"
 #include "mv.h"
+#include "cd.h"
 
 using namespace std;
 
@@ -17,8 +18,11 @@ class MainClass
     Rm rm;
     Cp cp;
     Mv mv;
+    Cd cd;
 
 public:
     MainClass();
     void mainLoop();
+
+    ~MainClass();
 };
