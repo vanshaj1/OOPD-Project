@@ -66,10 +66,11 @@ void MainClass::commandParser(string &s)
     {
         cd.execute(argc, argv);
     }
-
-    for (i = 0; i < argc; i++)
+    i--;
+    while (i >= 0)
     {
         delete argv[i];
+        i--;
     }
 }
 

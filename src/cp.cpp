@@ -84,14 +84,20 @@ void Cp::copy(const char *src, const char *dest, bool recursive, bool verbose)
         srcPath.append(src);
         destPath.append(dest);
 
-        if (src == dest)
+        if (!filesystem::is_directory(destPath.parent_path()))
         {
-            cout << "Same source and destination" << endl;
+            cout << "Path doesn't exists" << endl;
             return;
         }
-        else if (filesystem::exists(dest))
+        if (filesystem::is_regular_file(dest))
         {
-            cout << "Destination already exits" << endl;
+            cout << "Cannot overwrite file" << endl;
+            return;
+        }
+        if (filesystem::is_directory(dest))
+        {
+            destPath.append(srcPath.filename().c_str());
+            _copy(srcPath, destPath, recursive, verbose);
             return;
         }
         _copy(srcPath, destPath, recursive, verbose);
@@ -117,7 +123,10 @@ void Cp::_copy(filesystem::path src, filesystem::path dest, bool recursive, bool
     }
     else
     {
-        cout << "Copying from " << src << " to " << dest << endl;
+        if (verbose)
+        {
+            cout << "Copying from " << src << " to " << dest << endl;
+        }
         ifstream inp(src, ios::binary);
         ofstream otp(dest, ios::binary);
         std::copy(istreambuf_iterator<char>(inp), istreambuf_iterator<char>(), ostreambuf_iterator<char>(otp));
@@ -125,10 +134,15 @@ void Cp::_copy(filesystem::path src, filesystem::path dest, bool recursive, bool
         otp.close();
         return;
     }
-    cout << "Creating directory " << dest << endl;
+    if (verbose)
+    {
+        cout << "Creating directory " << dest << endl;
+    }
     filesystem::create_directory(dest);
     for (auto &entry : filesystem::directory_iterator(src))
     {
+        if (entry.path() == dest)
+            continue;
         auto temp = dest;
         temp.append(entry.path().filename().c_str());
         _copy(entry.path(), temp, recursive, verbose);
