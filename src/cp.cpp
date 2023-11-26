@@ -1,6 +1,7 @@
 #include "cp.h"
 #include <unistd.h>
 #include <bits/stdc++.h>
+#include <thread>
 
 Cp::Cp(filesystem::path *path) : CommandClass(path)
 {
@@ -139,12 +140,28 @@ void Cp::_copy(filesystem::path src, filesystem::path dest, bool recursive, bool
         cout << "Creating directory " << dest << endl;
     }
     filesystem::create_directory(dest);
+    vector<thread *> threads;
     for (auto &entry : filesystem::directory_iterator(src))
     {
         if (entry.path() == dest)
             continue;
         auto temp = dest;
         temp.append(entry.path().filename().c_str());
-        _copy(entry.path(), temp, recursive, verbose);
+        if (filesystem::is_regular_file(entry.path()) && currentThreads > factor * totalCores)
+        {
+            _copy(entry.path(), temp, recursive, verbose);
+        }
+        else
+        {
+            currentThreads++;
+            thread *th = new thread(&Cp::_copy, *this, entry.path(), temp, recursive, verbose);
+            threads.push_back(th);
+        }
+    }
+    for (auto &t : threads)
+    {
+        t->join();
+        currentThreads--;
+        delete t;
     }
 }

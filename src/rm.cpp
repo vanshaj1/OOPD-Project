@@ -1,6 +1,7 @@
 #include "rm.h"
 #include <unistd.h>
 #include <bits/stdc++.h>
+#include <thread>
 
 using namespace std;
 
@@ -117,9 +118,25 @@ void Rm::_deleteItem(filesystem::path path, bool recursive, bool verbose)
     {
         cout << "Deleting directory " << path.filename() << ": " << endl;
     }
+    vector<thread *> threads;
     for (auto const &dirEntry : filesystem::directory_iterator(path))
     {
-        _deleteItem(dirEntry.path(), recursive, verbose);
+        if (filesystem::is_regular_file(dirEntry.path()) && currentThreads > factor * totalCores)
+        {
+            _deleteItem(dirEntry.path(), recursive, verbose);
+        }
+        else
+        {
+            currentThreads++;
+            thread *th = new thread(&Rm::_deleteItem, *this, dirEntry.path(), recursive, verbose);
+            threads.push_back(th);
+        }
+    }
+    for (auto &t : threads)
+    {
+        t->join();
+        currentThreads--;
+        delete t;
     }
     filesystem::remove(path);
 }
