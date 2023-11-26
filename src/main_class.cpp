@@ -2,7 +2,7 @@
 #include <unistd.h>
 
 MainClass::MainClass() : currentPath{new filesystem::path(filesystem::current_path())}, mkdir(currentPath), rm(currentPath), cp(currentPath), mv(currentPath),
-                         cd(currentPath)
+                         cd(currentPath), ls(currentPath)
 {
 }
 
@@ -65,6 +65,10 @@ void MainClass::commandParser(string &s)
     else if (!strcmp(argv[0], "cd"))
     {
         cd.execute(argc, argv);
+    }
+    else if (!strcmp(argv[0], "ls"))
+    {
+        ls.execute(argc, argv);
     }
     i--;
     while (i >= 0)

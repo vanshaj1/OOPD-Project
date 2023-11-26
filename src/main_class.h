@@ -6,6 +6,7 @@
 #include "cp.h"
 #include "mv.h"
 #include "cd.h"
+#include "ls.h"
 
 using namespace std;
 
@@ -19,6 +20,7 @@ class MainClass
     Cp cp;
     Mv mv;
     Cd cd;
+    Ls ls;
 
 public:
     MainClass();
