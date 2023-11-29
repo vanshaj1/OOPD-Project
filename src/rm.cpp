@@ -21,7 +21,7 @@ void Rm::execute(int argc, char *argv[])
     }
 
     int c;
-    while ((c = getopt(argc, argv, "rhv")) != -1)
+    while ((c = getopt(argc, argv, "rhvi")) != -1)
     {
         switch (c)
         {
@@ -55,6 +55,16 @@ void Rm::execute(int argc, char *argv[])
             deleteItem(item, true, true);
             break;
         }
+        case 'i':
+        {
+            if (!found)
+            {
+                cout << "file/directory not found" << endl;
+                return;
+            }
+            deleteItem(item, true, false, true);
+            break;
+        }
         }
     }
     if (optind == 1)
@@ -74,16 +84,17 @@ const char *Rm::helpText()
            "Remove(unlink) the FILE.\n\n"
            "-h   Get help text\n"
            "-r   Recursively delete directories\n"
-           "-v   Get description of each step(implicitly recursive)\n\n";
+           "-v   Get description of each step(implicitly recursive)\n"
+           "-i   Get prompts before every file deletion(implicitly recursive)\n\n";
 }
 
-void Rm::deleteItem(const char *path, bool recursive, bool verbose)
+void Rm::deleteItem(const char *path, bool recursive, bool verbose, bool interactive)
 {
     try
     {
         auto newPath = *currentPath;
         newPath.append(path);
-        _deleteItem(newPath, recursive, verbose);
+        _deleteItem(newPath, recursive, verbose, interactive);
     }
     catch (const char *s)
     {
@@ -95,17 +106,24 @@ void Rm::deleteItem(const char *path, bool recursive, bool verbose)
     }
 }
 
-void Rm::_deleteItem(filesystem::path path, bool recursive, bool verbose)
+void Rm::_deleteItem(filesystem::path path, bool recursive, bool verbose, bool interactive)
 {
-    if (filesystem::is_directory(path))
+    if (filesystem::is_regular_file(path))
     {
-        if (!recursive)
+        if (interactive)
         {
-            throw "-r or -v flag required for deleting directories";
+            string choice;
+            do
+            {
+                cout << "Delete " << path.lexically_relative(*currentPath) << " ?[y/n]";
+                getline(cin, choice);
+                if (choice == "N" || choice == "n")
+                {
+                    return;
+                }
+
+            } while (choice != "y" && choice != "Y");
         }
-    }
-    else
-    {
         if (verbose)
         {
             cout << "Deleting file " << path.filename() << endl;
@@ -113,13 +131,43 @@ void Rm::_deleteItem(filesystem::path path, bool recursive, bool verbose)
         filesystem::remove(path);
         return;
     }
+    if (!filesystem::is_directory(path))
+    {
+        if (!filesystem::is_directory(path.parent_path()))
+        {
+            cout << "Path doesn't exists" << endl;
+            return;
+        }
+
+        string file_name = path.filename().c_str();
+        if (file_name.size() < 2 || file_name[0] != '*' || file_name[1] != '.')
+        {
+            cout << "Wrong arguments" << endl;
+            return;
+        }
+
+        for (auto &entry : filesystem::directory_iterator(path.parent_path()))
+        {
+            if (path.extension() != entry.path().extension())
+                continue;
+            _deleteItem(entry.path(), recursive, verbose, interactive);
+        }
+        return;
+    }
+    if (!recursive)
+    {
+        throw "-r or -v flag required for deleting directories";
+    }
     if (verbose)
     {
         cout << "Deleting directory " << path.filename() << ": " << endl;
     }
     for (auto const &dirEntry : filesystem::directory_iterator(path))
     {
-        _deleteItem(dirEntry.path(), recursive, verbose);
+        _deleteItem(dirEntry.path(), recursive, verbose, interactive);
     }
-    filesystem::remove(path);
+    if (filesystem::is_empty(path))
+    {
+        filesystem::remove(path);
+    }
 }
